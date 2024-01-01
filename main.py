@@ -10,9 +10,8 @@ class MyApp:
         self.master.geometry("1280x720")
         self.frame = tk.CTkFrame(master=self.master)
         self.frame.pack(padx=15, pady=20, fill=tk.BOTH, expand=True)
-
         # Initial content
-        LoginView(master=self.frame)
+        LoginView(frame=self.frame)
 
         # Initial appearance and theme
         self.set_initial_appearance_and_theme()

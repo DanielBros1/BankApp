@@ -5,18 +5,18 @@ from app_view import AppView
 
 
 class BaseView:
-    def __init__(self, master):
-        self.master = master
+    def __init__(self, frame):
+        self.frame = frame
         self.widgets = {}
 
     def destroy_widgets(self):
-        for widget in self.master.winfo_children():
+        for widget in self.frame.winfo_children():
             widget.destroy()
 
 
 class RegisterView(BaseView):
-    def __init__(self, master):
-        super().__init__(master)
+    def __init__(self, frame):
+        super().__init__(frame)
         self.destroy_widgets()
 
         self.setup_registration_widgets()
@@ -24,32 +24,32 @@ class RegisterView(BaseView):
     def setup_registration_widgets(self):
 
         # BUILDING WIDGETS
-        register_label = tk.CTkLabel(master=self.master, text="Registration", corner_radius=10, font=("Roboto", 30))
+        register_label = tk.CTkLabel(master=self.frame, text="Registration", corner_radius=10, font=("Roboto", 30))
         register_label.pack(pady=12, padx=10)
-        username_entry = tk.CTkEntry(master=self.master, placeholder_text="Username", placeholder_text_color="grey",
+        username_entry = tk.CTkEntry(master=self.frame, placeholder_text="Username", placeholder_text_color="grey",
                                      font=("Roboto", 14), height=36, width=150)
         username_entry.pack(pady=8, padx=10)
-        first_name_entry = tk.CTkEntry(master=self.master, placeholder_text="First Name", placeholder_text_color="grey",
+        first_name_entry = tk.CTkEntry(master=self.frame, placeholder_text="First Name", placeholder_text_color="grey",
                                        font=("Roboto", 14), height=36, width=150)
-        last_name_entry = tk.CTkEntry(master=self.master, placeholder_text="Last Name", placeholder_text_color="grey",
+        last_name_entry = tk.CTkEntry(master=self.frame, placeholder_text="Last Name", placeholder_text_color="grey",
                                       font=("Roboto", 14), height=36, width=150)
-        password_entry = tk.CTkEntry(master=self.master, placeholder_text="Password", placeholder_text_color="grey",
+        password_entry = tk.CTkEntry(master=self.frame, placeholder_text="Password", placeholder_text_color="grey",
                                      font=("Roboto", 14), height=36, width=150)
-        confirm_password_entry = tk.CTkEntry(master=self.master, placeholder_text="Confirm Password",
+        confirm_password_entry = tk.CTkEntry(master=self.frame, placeholder_text="Confirm Password",
                                              placeholder_text_color="grey",
                                              font=("Roboto", 14), height=36, width=150)
 
-        register_button = tk.CTkButton(master=self.master, text="Register", font=("Roboto", 15),
+        register_button = tk.CTkButton(master=self.frame, text="Register", font=("Roboto", 15),
                                        command=lambda: self.register(username=username_entry.get(),
                                                                      first_name=first_name_entry.get(),
                                                                      last_name=last_name_entry.get(),
                                                                      password=password_entry.get(),
                                                                      confirm_password=confirm_password_entry.get()))
-        have_account_label = tk.CTkLabel(master=self.master, text="Already have an account?", corner_radius=10)
-        move_to_login_label = tk.CTkLabel(master=self.master, text="Login here!", corner_radius=10, font=("Roboto", 17),
+        have_account_label = tk.CTkLabel(master=self.frame, text="Already have an account?", corner_radius=10)
+        move_to_login_label = tk.CTkLabel(master=self.frame, text="Login here!", corner_radius=10, font=("Roboto", 17),
                                           text_color="cyan")
 
-        self.password_empty_label = tk.CTkLabel(master=self.master, corner_radius=10, text_color="red")
+        self.password_empty_label = tk.CTkLabel(master=self.frame, corner_radius=10, text_color="red")
 
         # ADD WIDGETS TO DICTIONARY
         self.widgets["register_label"] = register_label
@@ -75,6 +75,8 @@ class RegisterView(BaseView):
         have_account_label.widgetName = "have_account_label"
         move_to_login_label.widgetName = "move_to_login_label"
         self.password_empty_label.widgetName = "password_empty_label"
+
+        move_to_login_label.configure(cursor="hand2")
 
         # STYLING WIDGETS
         first_name_entry.pack(pady=8, padx=10)
@@ -104,7 +106,7 @@ class RegisterView(BaseView):
         # delete all dictionary widgets
         for widget in self.widgets.values():
             widget.destroy()
-        LoginView(master=self.master)
+        LoginView(frame=self.frame)
 
     def password_validation(self, password, confirm_password):
         print("Password: ", password)
@@ -142,55 +144,100 @@ class RegisterView(BaseView):
 
 
 class LoginView(BaseView):
-    def __init__(self, master):
-        super().__init__(master)
+    def __init__(self, frame):
+        super().__init__(frame)
         self.destroy_widgets()
 
-        login_label = tk.CTkLabel(master=self.master, text="Login System", corner_radius=10, font=("Roboto", 30))
+        login_label = tk.CTkLabel(master=self.frame, text="Login System", corner_radius=10, font=("Roboto", 30))
         login_label.pack(pady=12, padx=10)
 
-        username_entry = tk.CTkEntry(master=self.master, placeholder_text="Username", placeholder_text_color="grey",
+        username_entry = tk.CTkEntry(master=self.frame, placeholder_text="Username", placeholder_text_color="grey",
                                      font=("Roboto", 14), height=36, width=150)
         username_entry.pack(pady=8, padx=10)
 
-        password_entry = tk.CTkEntry(master=self.master, placeholder_text="Password", placeholder_text_color="grey",
+        password_entry = tk.CTkEntry(master=self.frame, placeholder_text="Password", placeholder_text_color="grey",
                                      font=("Roboto", 14), height=36, width=150)
         password_entry.pack(pady=8, padx=10)
 
-        login_button = tk.CTkButton(master=self.master, text="Login", command=lambda: self.login(), font=("Roboto", 15))
+        login_button = tk.CTkButton(master=self.frame, text="Login", command=lambda: self.login(), font=("Roboto", 15))
         login_button.pack(pady=(12, 3), padx=5)
 
-        no_account_label = tk.CTkLabel(master=self.master, text="Don't have an account?", corner_radius=10)
+        no_account_label = tk.CTkLabel(master=self.frame, text="Don't have an account?", corner_radius=10)
         no_account_label.pack(pady=(12, 0))
 
-        move_to_register_label = tk.CTkLabel(master=self.master, text="Sign up here!", corner_radius=10,
+        move_to_register_label = tk.CTkLabel(master=self.frame, text="Sign up here!", corner_radius=10,
                                              font=("Roboto", 17),
                                              text_color="cyan")
         move_to_register_label.pack()
         move_to_register_label.bind(sequence="<Button-1>", command=lambda event: self.register())
+        move_to_register_label.configure(cursor="hand2")
 
-    def open_new_window(self):
-        for widget in self.master.winfo_children():
+    def open_app_view(self):
+        for widget in self.frame.winfo_children():
             widget.destroy()
 
-        label = tk.CTkLabel(master=self.master, text="New Window", corner_radius=10, font=("Roboto", 30))
-        label.pack(pady=12, padx=10)
+        AppView(self.frame)
 
-        button = tk.CTkButton(master=self.master, text="Back", command=lambda: self.__init__(self.master),
-                              font=("Roboto", 15))
-        button.pack(pady=(12, 3), padx=5)
+
+     #   label = tk.CTkLabel(master=self.frame, text="New Window", corner_radius=10, font=("Roboto", 30))
+     #   label.pack(pady=12, padx=10)
+
+      #  button = tk.CTkButton(master=self.frame, text="Back", command=lambda: self.__init__(self.frame),
+           #                   font=("Roboto", 15))
+      # button.pack(pady=(12, 3), padx=5)
 
     def login(self):
         print("Login")
         # delete acutal frame
         self.destroy_widgets()
-        self.master.destroy()
-  #      AppView()
+ #       self.frame.destroy()
+    #    var = self.frame.master
+   #     self.frame.master.geometry("1330x330")
+        # add circle progress bar
+        progress_bar = tk.CTkProgressBar(master=self.frame, width=200, height=15, orientation="horizontal")
+        progress_bar.configure(require_redraw=True)
+        progress_bar.pack(pady=12)
+
+        # add label
+        label = tk.CTkLabel(master=self.frame, text="Loading...", corner_radius=10, font=("Roboto", 30))
+        label.pack(pady=12, padx=10)
+
+        self.start_loading(progress_bar)
+      #  AppView()
         #self.open_new_window()
+
+    def start_loading(self, progress_bar):
+        # Reset progress bar
+        progress_bar.set(0)
+
+        # Simulate loading for 3 seconds
+        self.loading_process(0.01, 0.01, progress_bar)
+
+    def loading_process(self, step, duration, progress_bar):
+        current_value = 0
+        total_steps = int(duration / step)
+
+        def update_progress():
+            nonlocal current_value
+            if current_value < total_steps:
+                # Update progress bar
+                current_value += 1
+                progress_bar.set(current_value / total_steps)
+
+                # Schedule the next update
+                self.frame.after(int(step * 1000), update_progress)
+            else:
+                # Reset progress bar when loading is complete
+                progress_bar.set(1.0)
+                self.frame.after(1000, lambda: self.open_app_view())
+
+        # Start the loading process
+        update_progress()
+
 
     def register(self):
         print("Register")
-        RegisterView(master=self.master)
+        RegisterView(frame=self.frame)
 
 # TOOD: Zapisywanie danych o zachoaniu użytkownika: co robil, jak dlugo trwala sesja,
 # ile akcji kupil, ile mial w danym momencie na koncie, jaki ma "poziom aplikacji" itd.
