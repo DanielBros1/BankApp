@@ -1,13 +1,15 @@
 import customtkinter as tk
 import re
+import sqlite3
 
 from app_view import AppView
-
+from CTkMessagebox import CTkMessagebox
 
 class BaseView:
     def __init__(self, frame):
         self.frame = frame
         self.widgets = {}
+
 
     def destroy_widgets(self):
         for widget in self.frame.winfo_children():
@@ -19,7 +21,22 @@ class RegisterView(BaseView):
         super().__init__(frame)
         self.destroy_widgets()
 
+        self.connect_to_database()
         self.setup_registration_widgets()
+
+    def connect_to_database(self):
+        # Connect to database
+        conn = sqlite3.connect("currency_exchange.db")
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT * FROM users""")
+
+        rows = cursor.fetchall()
+        for row in rows:
+            print(row)
+
+        cursor.close()
+        conn.close()
 
     def setup_registration_widgets(self):
 
@@ -148,6 +165,9 @@ class LoginView(BaseView):
         super().__init__(frame)
         self.destroy_widgets()
 
+        self.all_users = None
+        self.connect_to_database()
+
         login_label = tk.CTkLabel(master=self.frame, text="Login System", corner_radius=10, font=("Roboto", 30))
         login_label.pack(pady=12, padx=10)
 
@@ -156,10 +176,12 @@ class LoginView(BaseView):
         username_entry.pack(pady=8, padx=10)
 
         password_entry = tk.CTkEntry(master=self.frame, placeholder_text="Password", placeholder_text_color="grey",
-                                     font=("Roboto", 14), height=36, width=150)
+                                     font=("Roboto", 14), height=36, width=150, show="*")
         password_entry.pack(pady=8, padx=10)
 
-        login_button = tk.CTkButton(master=self.frame, text="Login", command=lambda: self.login(), font=("Roboto", 15))
+        login_button = tk.CTkButton(master=self.frame, text="Login",
+                                    command=lambda: self.login(username_entry.get(),
+                                                               password_entry.get()), font=("Roboto", 15))
         login_button.pack(pady=(12, 3), padx=5)
 
         no_account_label = tk.CTkLabel(master=self.frame, text="Don't have an account?", corner_radius=10)
@@ -171,6 +193,22 @@ class LoginView(BaseView):
         move_to_register_label.pack()
         move_to_register_label.bind(sequence="<Button-1>", command=lambda event: self.register())
         move_to_register_label.configure(cursor="hand2")
+
+    def connect_to_database(self):
+        # Connect to database
+        conn = sqlite3.connect("currency_exchange.db")
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT * FROM users""")
+
+        self.all_users = cursor.fetchall()
+        rows = cursor.fetchall()
+        for row in rows:
+            print(row)
+
+
+        cursor.close()
+        conn.close()
 
     def open_app_view(self):
         for widget in self.frame.winfo_children():
@@ -186,8 +224,22 @@ class LoginView(BaseView):
            #                   font=("Roboto", 15))
       # button.pack(pady=(12, 3), padx=5)
 
-    def login(self):
+    def login(self, username, password):
         print("Login")
+
+        print("Username: ", username)
+        print("Password: ", password)
+
+        # Check if username and password are in database
+        for user in self.all_users:
+            print(user[1], user[4])
+            if user[1] == username and user[4] == password:
+                self.start_login_process()
+                return
+        CTkMessagebox(title="Error", message="Invalid username or password", icon="cancel",
+                      master=self.frame)
+
+    def start_login_process(self):
         # delete acutal frame
         self.destroy_widgets()
  #       self.frame.destroy()

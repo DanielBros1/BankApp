@@ -2,10 +2,23 @@ import customtkinter as tk
 from PIL import ImageTk, Image
 from CTkTable import *
 
+from views.currency_frame import CurrencyFrame
+
 
 class AppView:
     def __init__(self, frame):
         self.frame = frame
+        self.my_colors = {
+            # DARK MODE
+            "dark_grey_color": "#2B2B2B",
+            "very_dark_grey_color": "#1E1E1E",
+            "some_dark_grey_color": "#4A4A4A",
+            # LIGHT MODE
+            "light_grey_color": "#C9CDCD",
+            "sky_blue_color": "#4072F1",
+            "grey_blue_color": "#9FBBD2"
+        }
+        print(self.my_colors.get("dark_grey_color"))
         self.setup_applications_widgets()
 
     def destroy_widgets(self):
@@ -13,44 +26,41 @@ class AppView:
             widget.destroy()
 
     def setup_applications_widgets(self):
-        # DARK MODE
-        dark_grey_color = "#2B2B2B"
-        very_dark_grey_color = "#1E1E1E"
-        some_dark_grey_color = "#4A4A4A"
-        # LIGHT MODE
-        light_grey_color = "#C9CDCD"
-        sky_blue_color = "#4072F1"
-        grey_blue_color = "#9FBBD2"
-
+        # # DARK MODE
+        # dark_grey_color = "#2B2B2B"
+        # very_dark_grey_color = "#1E1E1E"
+        # some_dark_grey_color = "#4A4A4A"
+        # # LIGHT MODE
+        # light_grey_color = "#C9CDCD"
+        # sky_blue_color = "#4072F1"
+        # grey_blue_color = "#9FBBD2"
 
         app_window = self.frame.master
         app_window.geometry("1280x720")
         app_window.title("Banking App")
 
-
         # Utworzenie trzech obszarów z odpowiednimi szerokościami
-        left_frame = tk.CTkFrame(master=app_window)
-        left_frame.place(relwidth=0.15, relheight=1.0, relx=0, rely=0)
+        self.left_frame = tk.CTkFrame(master=app_window)
+        self.left_frame.place(relwidth=0.15, relheight=1.0, relx=0, rely=0)
         #  left_frame.configure(fg_color=dark_grey_color)
-        left_frame.configure(fg_color=sky_blue_color)
-        left_frame.configure(cursor="mouse")
+        self.left_frame.configure(fg_color=self.my_colors.get("sky_blue_color"))
+        self.left_frame.configure(cursor="mouse")
 
-        center_frame = tk.CTkFrame(master=app_window)
-        center_frame.place(relwidth=0.60, relheight=1.0, relx=0.15, rely=0)
+        self.center_frame = tk.CTkFrame(master=app_window)
+        self.center_frame.place(relwidth=0.60, relheight=1.0, relx=0.15, rely=0)
         # center_frame.configure(fg_color=some_dark_grey_color)
-        center_frame.configure(fg_color=light_grey_color)
+        self.center_frame.configure(fg_color=self.my_colors.get("light_grey_color"))
 
         right_frame = tk.CTkFrame(master=app_window)
         right_frame.place(relwidth=0.25, relheight=1.0, relx=0.75, rely=0)
         # right_frame.configure(fg_color=very_dark_grey_color)
-        right_frame.configure(fg_color=grey_blue_color)
+        right_frame.configure(fg_color=self.my_colors.get("grey_blue_color"))
 
         account_imag, add_money_imag, currency_imag, home_imag, send_money_imag, settings_imag = self.load_and_create_image()
 
-        self.left_frame_build(account_imag, currency_imag, home_imag, left_frame, settings_imag)
+        self.left_frame_build(account_imag, currency_imag, home_imag, settings_imag)
 
-        self.center_frame_build(add_money_imag, center_frame, grey_blue_color, light_grey_color, send_money_imag,
-                                sky_blue_color)
+        self.center_home_build(add_money_imag, send_money_imag)
 
         right_left = tk.CTkLabel(master=right_frame, text="RL", corner_radius=10)
         right_left.pack(pady=12, padx=10, side=tk.LEFT)
@@ -84,45 +94,63 @@ class AppView:
                                     dark_image=currency_black_image)
         settings_imag = tk.CTkImage(light_image=settings_white_image,
                                     dark_image=settings_black_image)
-        add_money_imag = tk.CTkImage(light_image=add_money_white_image,
-                                     dark_image=add_money_black_image)
-        send_money_imag = tk.CTkImage(light_image=send_money_white_image,
-                                      dark_image=send_money_black_image)
-        return account_imag, add_money_imag, currency_imag, home_imag, send_money_imag, settings_imag
+        self.add_money_imag = tk.CTkImage(light_image=add_money_white_image,
+                                          dark_image=add_money_black_image)
+        self.send_money_imag = tk.CTkImage(light_image=send_money_white_image,
+                                           dark_image=send_money_black_image)
+        return account_imag, self.add_money_imag, currency_imag, home_imag, self.send_money_imag, settings_imag
 
-    def left_frame_build(self, account_imag, currency_imag, home_imag, left_frame, settings_imag):
+    def left_frame_build(self, account_imag, currency_imag, home_imag, settings_imag):
         # add image to left frame
-        h = tk.CTkLabel(master=left_frame, image=home_imag, text="   Home  ", compound=tk.LEFT, font=('Noto Sans', 20),
-                        text_color="white")
-        h.pack(pady=(220, 12), padx=10, side=tk.TOP)
-        a = tk.CTkLabel(master=left_frame, image=account_imag, text="   My Account  ",
-                        compound=tk.LEFT, font=('Noto Sans', 20), text_color="white")
-        a.pack(pady=12, padx=10, side=tk.TOP)
-        c = tk.CTkLabel(master=left_frame, image=currency_imag, text="   Currency  ",
-                        compound=tk.LEFT, font=('Noto Sans', 20), text_color="white")
-        c.pack(pady=12, padx=10, side=tk.TOP)
-        s = tk.CTkLabel(master=left_frame, image=settings_imag, text="   Settings  ",
-                        compound=tk.LEFT, font=('Noto Sans', 20), text_color="white")
-        s.pack(pady=12, padx=10, side=tk.TOP)
+        home_control_label = tk.CTkLabel(master=self.left_frame, image=home_imag, text="   Home  ", compound=tk.LEFT,
+                                         font=('Noto Sans', 20),
+                                         text_color="white")
+        home_control_label.pack(pady=(220, 12), padx=10, side=tk.TOP)
+        account_control_label = tk.CTkLabel(master=self.left_frame, image=account_imag, text="   My Account  ",
+                                            compound=tk.LEFT, font=('Noto Sans', 20), text_color="white")
+        account_control_label.pack(pady=12, padx=10, side=tk.TOP)
+        currency_control_label = tk.CTkLabel(master=self.left_frame, image=currency_imag, text="   Currency  ",
+                                             compound=tk.LEFT, font=('Noto Sans', 20), text_color="white")
+        currency_control_label.pack(pady=12, padx=10, side=tk.TOP)
+        settings_control_label = tk.CTkLabel(master=self.left_frame, image=settings_imag, text="   Settings  ",
+                                             compound=tk.LEFT, font=('Noto Sans', 20), text_color="white")
+        settings_control_label.pack(pady=12, padx=10, side=tk.TOP)
 
         # SET CURSOR ON MENU LABELS
-        h.configure(cursor="hand2")
-        a.configure(cursor="hand2")
-        c.configure(cursor="hand2")
-        s.configure(cursor="hand2")
+        home_control_label.configure(cursor="hand2")
+        account_control_label.configure(cursor="hand2")
+        currency_control_label.configure(cursor="hand2")
+        settings_control_label.configure(cursor="hand2")
 
         # HOVER EFFECTS
-        h.bind("<Enter>", lambda event: h.configure(text_color="red", font=('Noto Sans', 21, 'bold')))
-        h.bind("<Leave>", lambda event: h.configure(text_color="white", font=('Noto Sans', 20)))
-        a.bind("<Enter>", lambda event: a.configure(text_color="red", font=('Noto Sans', 21, 'bold')))
-        a.bind("<Leave>", lambda event: a.configure(text_color="white", font=('Noto Sans', 20)))
-        c.bind("<Enter>", lambda event: c.configure(text_color="red", font=('Noto Sans', 21, 'bold')))
-        c.bind("<Leave>", lambda event: c.configure(text_color="white", font=('Noto Sans', 20)))
-        s.bind("<Enter>", lambda event: s.configure(text_color="red", font=('Noto Sans', 21, 'bold')))
-        s.bind("<Leave>", lambda event: s.configure(text_color="white", font=('Noto Sans', 20)))
+        home_control_label.bind("<Enter>", lambda event: home_control_label.configure(text_color="red",
+                                                                                      font=('Noto Sans', 21, 'bold')))
+        home_control_label.bind("<Leave>",
+                                lambda event: home_control_label.configure(text_color="white", font=('Noto Sans', 20)))
+        account_control_label.bind("<Enter>", lambda event: account_control_label.configure(text_color="red", font=(
+            'Noto Sans', 21, 'bold')))
+        account_control_label.bind("<Leave>", lambda event: account_control_label.configure(text_color="white",
+                                                                                            font=('Noto Sans', 20)))
+        currency_control_label.bind("<Enter>", lambda event: currency_control_label.configure(text_color="red", font=(
+            'Noto Sans', 21, 'bold')))
+        currency_control_label.bind("<Leave>", lambda event: currency_control_label.configure(text_color="white",
+                                                                                              font=('Noto Sans', 20)))
+        settings_control_label.bind("<Enter>", lambda event: settings_control_label.configure(text_color="red", font=(
+            'Noto Sans', 21, 'bold')))
+        settings_control_label.bind("<Leave>", lambda event: settings_control_label.configure(text_color="white",
+                                                                                              font=('Noto Sans', 20)))
 
-    def center_frame_build(self, add_money_imag, center_frame, grey_blue_color, light_grey_color, send_money_imag,
-                           sky_blue_color):
+        # BINDING EVENTS
+        home_control_label.bind("<Button-1>", lambda event: self.center_home_build(
+            self.add_money_imag, self.send_money_imag))
+
+        currency_control_label.bind("<Button-1>", lambda event: self.currency_center_build(
+            self.center_frame))
+
+        # delete widgets in center frame
+        account_control_label.bind("<Button-1>", lambda event: self.clear_center_frame())
+
+    def center_home_build(self, add_money_imag, send_money_imag):
         # Calculate heights based on percentages
         welcome_height = 0.10
         balance_height = 0.10
@@ -130,44 +158,46 @@ class AppView:
         history_height = 0.45
         rest_height = 0.10
         # Welcome Area
-        welcome_area = tk.CTkFrame(master=center_frame)
+        welcome_area = tk.CTkFrame(master=self.center_frame)
         welcome_area.place(relwidth=1.0, relheight=welcome_height, relx=0, rely=0)
-        welcome_area.configure(fg_color=light_grey_color)
+        welcome_area.configure(fg_color=self.my_colors.get("light_grey_color"))
         welcome_label = tk.CTkLabel(master=welcome_area, text="Welcome UserName", text_color='black',
                                     font=('Noto Sans', 34))
         welcome_label.pack(pady=12, padx=30, side=tk.LEFT)
         # Balance Area
-        balance_area = tk.CTkFrame(master=center_frame)
+        balance_area = tk.CTkFrame(master=self.center_frame)
         balance_area.place(relwidth=1.0, relheight=balance_height, relx=0, rely=welcome_height)
-        balance_area.configure(fg_color=light_grey_color)
+        balance_area.configure(fg_color=self.my_colors.get("light_grey_color"))
         your_balance = "$10,200.54"
         balance_label = tk.CTkLabel(master=balance_area, text=f'Account Balance {your_balance}', text_color='black',
                                     font=('Noto Sans', 28))
         balance_label.pack(pady=20, padx=15, side=tk.BOTTOM)
         # account_balance.configure(text_color="red")
         # Operations Area
-        operations_area = tk.CTkFrame(master=center_frame)
+        operations_area = tk.CTkFrame(master=self.center_frame)
         operations_area.place(relwidth=1.0, relheight=operation_height, relx=0, rely=welcome_height + balance_height)
-        operations_area.configure(fg_color=light_grey_color)
+        operations_area.configure(fg_color=self.my_colors.get("light_grey_color"))
         add_money_button = tk.CTkButton(master=operations_area, width=200, height=50, image=add_money_imag,
                                         text="   Add Money  ",
                                         compound=tk.RIGHT, font=('Noto Sans', 22), text_color="black",
-                                        border_color=sky_blue_color, border_width=2, fg_color=light_grey_color,
-                                        hover_color=grey_blue_color)
+                                        border_color=self.my_colors.get("sky_blue_color"), border_width=2,
+                                        fg_color=self.my_colors.get("light_grey_color"),
+                                        hover_color=self.my_colors.get("grey_blue_color"))
         add_money_button.pack(pady=12, padx=(90, 5), side=tk.LEFT)
         add_money_button.configure(cursor="plus")
         send_money_button = tk.CTkButton(master=operations_area, width=200, height=50, image=send_money_imag,
                                          text="   Send Money  ",
                                          compound=tk.RIGHT, font=('Noto Sans', 22), text_color="black",
-                                         border_color=sky_blue_color, border_width=2, fg_color=light_grey_color,
-                                         hover_color=grey_blue_color)
+                                         border_color=self.my_colors.get("sky_blue_color"), border_width=2,
+                                         fg_color=self.my_colors.get("light_grey_color"),
+                                         hover_color=self.my_colors.get("grey_blue_color"))
         send_money_button.pack(pady=12, padx=(5, 90), side=tk.RIGHT)
         send_money_button.configure(cursor="plus")
         # History Area
-        history_area = tk.CTkFrame(master=center_frame)
+        history_area = tk.CTkFrame(master=self.center_frame)
         history_area.place(relwidth=1.0, relheight=history_height, relx=0,
                            rely=welcome_height + balance_height + operation_height)
-        history_area.configure(fg_color=light_grey_color)
+        history_area.configure(fg_color=self.my_colors.get("light_grey_color"))
         # history_label = tk.CTkLabel(master=history_area, text="History", text_color='black', font=('Noto Sans', 28))
         # history_label.pack(pady=5, side=tk.TOP)
         history_main_info_label = tk.CTkLabel(master=history_area, text="Last 5 transactions:", text_color='black',
@@ -180,7 +210,8 @@ class AppView:
                  [1, 2, 3, 4, 5],
                  [1, 2, 3, 4, 5]]
         # History Table
-        transaction_table = CTkTable(master=history_area, column=5, row=6, header_color=sky_blue_color,
+        transaction_table = CTkTable(master=history_area, column=5, row=6,
+                                     header_color=self.my_colors.get("sky_blue_color"),
                                      values=value, hover=True, hover_color="green", width=700, height=1100)
         transaction_table.pack(pady=5, padx=5, side=tk.BOTTOM)
         transaction_table.insert(0, 0, "Date")
@@ -219,7 +250,15 @@ class AppView:
         transaction_table.insert(5, 3, "USD")
         transaction_table.insert(5, 4, "Completed")
         # Rest Area
-        rest_area = tk.CTkFrame(master=center_frame)
+        rest_area = tk.CTkFrame(master=self.center_frame)
         rest_area.place(relwidth=1.0, relheight=rest_height, relx=0,
                         rely=welcome_height + balance_height + operation_height + history_height)
-        rest_area.configure(fg_color=light_grey_color)
+        rest_area.configure(fg_color=self.my_colors.get("light_grey_color"))
+
+    def currency_center_build(self, center_frame):
+        self.clear_center_frame()
+        currency_frame = CurrencyFrame(self.center_frame)
+
+    def clear_center_frame(self):
+        for widget in self.center_frame.winfo_children():
+            widget.destroy()
