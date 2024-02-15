@@ -1,13 +1,15 @@
 import customtkinter as tk
 from PIL import ImageTk, Image
 from CTkTable import *
+import requests
 
 from views.currency_frame import CurrencyFrame
 
 
 class AppView:
-    def __init__(self, frame):
+    def __init__(self, frame, username):
         self.frame = frame
+        self.username = username
         self.my_colors = {
             # DARK MODE
             "dark_grey_color": "#2B2B2B",
@@ -20,6 +22,14 @@ class AppView:
         }
         print(self.my_colors.get("dark_grey_color"))
         self.setup_applications_widgets()
+
+    def test_widget(self, base_currency, target_currency, amount):
+        url = f"https://api.frankfurter.app/latest?amount={amount}&from={base_currency}&to={target_currency}"
+        response = requests.get(url)
+        data = response.json()
+        print(response.status_code)
+        print(f"amout: {amount} {base_currency} is {response.json()['rates'][target_currency]} {target_currency}")
+        return data['rates'][target_currency]
 
     def destroy_widgets(self):
         for widget in self.frame.winfo_children():
@@ -151,6 +161,15 @@ class AppView:
         account_control_label.bind("<Button-1>", lambda event: self.clear_center_frame())
 
     def center_home_build(self, add_money_imag, send_money_imag):
+
+        # TEST
+        amount = 100
+        base_cur = "USD"
+        target_cur = "EUR"
+        exchange_rate = self.test_widget(base_cur, target_cur, amount)
+        print(f'Exchange rate from {base_cur} to {target_cur} is: {exchange_rate}')
+
+
         # Calculate heights based on percentages
         welcome_height = 0.10
         balance_height = 0.10
@@ -161,7 +180,7 @@ class AppView:
         welcome_area = tk.CTkFrame(master=self.center_frame)
         welcome_area.place(relwidth=1.0, relheight=welcome_height, relx=0, rely=0)
         welcome_area.configure(fg_color=self.my_colors.get("light_grey_color"))
-        welcome_label = tk.CTkLabel(master=welcome_area, text="Welcome UserName", text_color='black',
+        welcome_label = tk.CTkLabel(master=welcome_area, text=f'Welcome {self.username}', text_color='black',
                                     font=('Noto Sans', 34))
         welcome_label.pack(pady=12, padx=30, side=tk.LEFT)
         # Balance Area
@@ -258,6 +277,7 @@ class AppView:
     def currency_center_build(self, center_frame):
         self.clear_center_frame()
         currency_frame = CurrencyFrame(self.center_frame)
+
 
     def clear_center_frame(self):
         for widget in self.center_frame.winfo_children():

@@ -9,20 +9,12 @@ class BaseView:
     def __init__(self, frame):
         self.frame = frame
         self.widgets = {}
-
+        self.all_users = None
+        self.connect_to_database()
 
     def destroy_widgets(self):
         for widget in self.frame.winfo_children():
             widget.destroy()
-
-
-class RegisterView(BaseView):
-    def __init__(self, frame):
-        super().__init__(frame)
-        self.destroy_widgets()
-
-        self.connect_to_database()
-        self.setup_registration_widgets()
 
     def connect_to_database(self):
         # Connect to database
@@ -31,12 +23,20 @@ class RegisterView(BaseView):
         cursor.execute("""
             SELECT * FROM users""")
 
+        self.all_users = cursor.fetchall()
         rows = cursor.fetchall()
         for row in rows:
             print(row)
 
         cursor.close()
         conn.close()
+class RegisterView(BaseView):
+    def __init__(self, frame):
+        super().__init__(frame)
+        self.destroy_widgets()
+
+        self.connect_to_database()
+        self.setup_registration_widgets()
 
     def setup_registration_widgets(self):
 
@@ -51,10 +51,10 @@ class RegisterView(BaseView):
         last_name_entry = tk.CTkEntry(master=self.frame, placeholder_text="Last Name", placeholder_text_color="grey",
                                       font=("Roboto", 14), height=36, width=150)
         password_entry = tk.CTkEntry(master=self.frame, placeholder_text="Password", placeholder_text_color="grey",
-                                     font=("Roboto", 14), height=36, width=150)
+                                     font=("Roboto", 14), height=36, width=150, show="*")
         confirm_password_entry = tk.CTkEntry(master=self.frame, placeholder_text="Confirm Password",
                                              placeholder_text_color="grey",
-                                             font=("Roboto", 14), height=36, width=150)
+                                             font=("Roboto", 14), height=36, width=150, show="*")
 
         register_button = tk.CTkButton(master=self.frame, text="Register", font=("Roboto", 15),
                                        command=lambda: self.register(username=username_entry.get(),
@@ -107,14 +107,64 @@ class RegisterView(BaseView):
         # BINDING WIDGETS
         move_to_login_label.bind(sequence="<Button-1>", command=lambda event: self.login())
 
+    def is_input_valid(self, username, first_name, last_name, password, confirm_password):
+        # if any field is empty
+        if username == "" or first_name == "" or last_name == "" or password == "" or confirm_password == "":
+            CTkMessagebox(title="Error", message="All fields are required", icon="cancel", master=self.frame)
+            return False
+
+        # if username is less than 3 characters
+        if len(username) < 3:
+            CTkMessagebox(title="Error", message="Username must contain at least 3 characters", icon="cancel",
+                          master=self.frame)
+            return False
+
+        # if first name or last name is less than 2 characters
+        if len(first_name) < 2:
+            CTkMessagebox(title="Error", message="First name must contain at least 2 characters", icon="cancel",
+                          master=self.frame)
+            return False
+
+        # if first name or last name is less than 2 characters
+        if len(last_name) < 2:
+            CTkMessagebox(title="Error", message="Last name must contain at least 2 characters", icon="cancel",
+                          master=self.frame)
+            return False
+
+        return True
     def register(self, username, first_name, last_name, password, confirm_password):
         # TODO: check if username is existing in database
-        # TODO check if password and confirm password are the same
         # TODO: check if the fields are not empty
         # TODO: username min 3 characters, first name min 2 characters, last name min 2 characters
         # TODO: password min 8 characters, password must contain at least 1 number, 1 uppercase letter, 1 lowercase letter
 
-        self.password_validation(password, confirm_password)
+        if self.is_input_valid(username, first_name, last_name, password, confirm_password) is False:
+            return
+
+        # Check if username is already in database
+        for user in self.all_users:
+            if user[1] == username:
+                CTkMessagebox(title="Error", message="Username already exists", icon="cancel", master=self.frame)
+                return
+
+        if self.password_validation(password, confirm_password) is True:
+
+            conn = sqlite3.connect("currency_exchange.db")
+            cursor = conn.cursor()
+
+            cursor.execute("""
+                INSERT INTO users (username, first_name, last_name, password)
+                VALUES (?, ?, ?, ?)""", (username, first_name, last_name, password))
+
+            conn.commit()
+            cursor.close()
+            conn.close()
+            msg = CTkMessagebox(title="Success", message="You have been registered", icon="check",
+                                master=self.frame, option_1="Login now", option_2="Ok", option_focus=1)
+
+            if msg.get() == "Login now":
+                self.login()
+
         print("Password: ", password)
         print("Confirm Password: ", confirm_password)
 
@@ -154,7 +204,8 @@ class RegisterView(BaseView):
             return True
         else:
 
-            self.password_empty_label.configure(text="Password is not strong")
+            self.password_empty_label.configure(text="Password is not strong\nPassword must contain at least 1 number, "
+                                                     "1 uppercase letter, 1 lowercase letter and min 8 characters")
             self.password_empty_label.pack(pady=(5, 0))
             print("Password is not strong")
             return False
@@ -165,7 +216,6 @@ class LoginView(BaseView):
         super().__init__(frame)
         self.destroy_widgets()
 
-        self.all_users = None
         self.connect_to_database()
 
         login_label = tk.CTkLabel(master=self.frame, text="Login System", corner_radius=10, font=("Roboto", 30))
@@ -194,27 +244,11 @@ class LoginView(BaseView):
         move_to_register_label.bind(sequence="<Button-1>", command=lambda event: self.register())
         move_to_register_label.configure(cursor="hand2")
 
-    def connect_to_database(self):
-        # Connect to database
-        conn = sqlite3.connect("currency_exchange.db")
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT * FROM users""")
-
-        self.all_users = cursor.fetchall()
-        rows = cursor.fetchall()
-        for row in rows:
-            print(row)
-
-
-        cursor.close()
-        conn.close()
-
-    def open_app_view(self):
+    def open_app_view(self, username):
         for widget in self.frame.winfo_children():
             widget.destroy()
 
-        AppView(self.frame)
+        AppView(self.frame, username)
 
 
      #   label = tk.CTkLabel(master=self.frame, text="New Window", corner_radius=10, font=("Roboto", 30))
@@ -234,12 +268,12 @@ class LoginView(BaseView):
         for user in self.all_users:
             print(user[1], user[4])
             if user[1] == username and user[4] == password:
-                self.start_login_process()
+                self.start_login_process(username)
                 return
         CTkMessagebox(title="Error", message="Invalid username or password", icon="cancel",
                       master=self.frame)
 
-    def start_login_process(self):
+    def start_login_process(self, username):
         # delete acutal frame
         self.destroy_widgets()
  #       self.frame.destroy()
@@ -254,18 +288,18 @@ class LoginView(BaseView):
         label = tk.CTkLabel(master=self.frame, text="Loading...", corner_radius=10, font=("Roboto", 30))
         label.pack(pady=12, padx=10)
 
-        self.start_loading(progress_bar)
+        self.start_loading(progress_bar, username)
       #  AppView()
         #self.open_new_window()
 
-    def start_loading(self, progress_bar):
+    def start_loading(self, progress_bar, username):
         # Reset progress bar
         progress_bar.set(0)
 
         # Simulate loading for 3 seconds
-        self.loading_process(0.01, 0.01, progress_bar)
+        self.loading_process(0.01, 0.01, progress_bar, username)
 
-    def loading_process(self, step, duration, progress_bar):
+    def loading_process(self, step, duration, progress_bar, username):
         current_value = 0
         total_steps = int(duration / step)
 
@@ -281,7 +315,7 @@ class LoginView(BaseView):
             else:
                 # Reset progress bar when loading is complete
                 progress_bar.set(1.0)
-                self.frame.after(1000, lambda: self.open_app_view())
+                self.frame.after(1000, lambda: self.open_app_view(username))
 
         # Start the loading process
         update_progress()
@@ -290,6 +324,3 @@ class LoginView(BaseView):
     def register(self):
         print("Register")
         RegisterView(frame=self.frame)
-
-# TOOD: Zapisywanie danych o zachoaniu użytkownika: co robil, jak dlugo trwala sesja,
-# ile akcji kupil, ile mial w danym momencie na koncie, jaki ma "poziom aplikacji" itd.

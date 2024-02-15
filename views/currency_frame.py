@@ -1,6 +1,12 @@
 import customtkinter as tk
+import matplotlib
+import pandas as pd
 from PIL import Image
 import tkinter as tk_standard
+import requests
+from matplotlib import pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 
 
 class CurrencyFrame:
@@ -18,31 +24,93 @@ class CurrencyFrame:
         }
         self.currencies = [
             {
+                "name": "USD",
                 "logo": self.load_image("cur_dolar"),
-                "value": "4.0124 PLN"
+                # "value": "4.0124 PLN"
             },
             {
+                "name": "EUR",
                 "logo": self.load_image("cur_euro"),
-                "value": "4.3242 PLN"
+                # "value": "4.3242 PLN"
             },
             {
+                "name": "GBP",
                 "logo": self.load_image("cur_pound"),
-                "value": "5.0152 PLN"
+                # "value": "5.0152 PLN"
             },
             {
+                "name": "JPY",
                 "logo": self.load_image("cur_yen"),
-                "value": "0.02625 PLN"
+                # "value": "0.02625 PLN"
             },
             {
+                "name": "CNY",
                 "logo": self.load_image("cur_yuan"),
-                "value": "0.5446 PLN"
+                # "value": "0.5446 PLN"
             },
             {
+                "name": "RUB",
                 "logo": self.load_image("cur_ruble"),
-                "value": "0.04330 PLN"
+                # "value": "0.04330 PLN"
             }
         ]
+        self.fetch_exchange_rates()
         self.create_widgets()
+
+    def fetch_exchange_rates(self):
+
+        def fetch_single_rate(base_currency, target_currency="PLN"):
+            amount = 1
+            url = f"https://api.frankfurter.app/latest?amount={amount}&from={base_currency}&to={target_currency}"
+            response = requests.get(url)
+            data = response.json()
+            print(f"amout: {amount} {base_currency} is {response.json()['rates'][target_currency]} {target_currency}")
+            return data['rates'][target_currency]
+
+        self.exchange_rates = {
+            "USD": fetch_single_rate("USD"),
+            "EUR": fetch_single_rate("EUR"),
+            "GBP": fetch_single_rate("GBP"),
+            "JPY": fetch_single_rate("JPY"),
+            "CNY": fetch_single_rate("CNY"),
+            "RUB": 0.04330  # RUB is not supported by the API
+        }
+        print(self.exchange_rates)
+
+        # Dodaj do currencies
+        for currency in self.currencies:
+            currency["value"] = f"{self.exchange_rates[currency['name']]} PLN"
+
+        print(self.currencies)
+     #   self.create_historical_data()
+
+    def create_historical_data(self, base_currency, target_currency="PLN"):
+        # Fetch historical data from API
+
+        url = f"https://api.frankfurter.app/2020-01-01..?from={base_currency}&to={target_currency}"
+        response = requests.get(url)
+        data = response.json()
+
+        # Convert data to pandas DataFrame
+        df = pd.DataFrame(data["rates"].items(), columns=["Date", "Rate"])
+        df["Date"] = pd.to_datetime(df["Date"])
+      #  df["Rate"] = df["Rate"].apply(lambda x: x["PLN"])
+        df["Rate"] = df["Rate"].apply(lambda x: x[target_currency])
+
+       # matplotlib.rcParams.update({'font.weight': 'bold'})
+        # Create figure
+        fig = Figure(figsize=(10, 6))
+        ax = fig.add_subplot(111)
+        ax.plot(df["Date"], df["Rate"])
+        ax.set_xlabel("Date", fontsize=20, fontweight='bold', color='black')
+        ax.set_ylabel(f"Exchange Rate ({base_currency}/{target_currency})", fontsize=20, fontweight='bold', color='black')
+        ax.set_title(f"Historical Exchange Rate of {base_currency} to {target_currency}", fontsize=22, fontweight='bold', color='black')
+        ax.grid(True)
+        # Set font size for x-axis and y-axis labels
+        ax.tick_params(axis='x', labelsize=14)
+        ax.tick_params(axis='y', labelsize=22)
+        return fig
+
 
     def load_image(self, image_name):
         white_image = Image.open(f"images/{image_name}_black.png")
@@ -153,6 +221,7 @@ class CurrencyFrame:
 
         currency_logo_imag1 = self.currencies[0]['logo']
         currency_value1 = self.currencies[0]['value']
+        currency_name1 = self.currencies[0]['name']
 
         currency_logo_label1 = tk.CTkLabel(master=currency_frame1, image=currency_logo_imag1, compound=tk.TOP,
                                            text=currency_value1,
@@ -165,6 +234,7 @@ class CurrencyFrame:
 
         currency_logo_imag2 = self.currencies[1]['logo']
         currency_value2 = self.currencies[1]['value']
+        currency_name2 = self.currencies[1]['name']
 
         currency_logo_label2 = tk.CTkLabel(master=currency_frame2, image=currency_logo_imag2, compound=tk.TOP,
                                            text=currency_value2,
@@ -177,6 +247,7 @@ class CurrencyFrame:
 
         currency_logo_imag3 = self.currencies[2]['logo']
         currency_value3 = self.currencies[2]['value']
+        currency_name3 = self.currencies[2]['name']
 
         currency_logo_label3 = tk.CTkLabel(master=currency_frame3, image=currency_logo_imag3, compound=tk.TOP,
                                            text=currency_value3,
@@ -189,6 +260,7 @@ class CurrencyFrame:
 
         currency_logo_imag4 = self.currencies[3]['logo']
         currency_value4 = self.currencies[3]['value']
+        currency_name4 = self.currencies[3]['name']
 
         currency_logo_label4 = tk.CTkLabel(master=currency_frame4, image=currency_logo_imag4, compound=tk.TOP,
                                            text=currency_value4,
@@ -201,6 +273,7 @@ class CurrencyFrame:
 
         currency_logo_imag5 = self.currencies[4]['logo']
         currency_value5 = self.currencies[4]['value']
+        currency_name5 = self.currencies[4]['name']
 
         currency_logo_label5 = tk.CTkLabel(master=currency_frame5, image=currency_logo_imag5, compound=tk.TOP,
                                            text=currency_value5,
@@ -213,6 +286,7 @@ class CurrencyFrame:
 
         currency_logo_imag6 = self.currencies[5]['logo']
         currency_value6 = self.currencies[5]['value']
+        currency_name6 = self.currencies[5]['name']
 
         currency_logo_label6 = tk.CTkLabel(master=currency_frame6, image=currency_logo_imag6, compound=tk.TOP,
                                            text=currency_value6,
@@ -249,7 +323,12 @@ class CurrencyFrame:
 
         # BINDING EVENTS
         # Stwórz nowe okno z wykresem
-        currency_logo_label1.bind("<Button-1>", lambda event: self.call_currency_exchange_window(currency_value1))
+        currency_logo_label1.bind("<Button-1>", lambda event: self.call_currency_exchange_window(
+            currency_value1, currency_name1))
+        currency_logo_label2.bind("<Button-1>", lambda event: self.call_currency_exchange_window(
+            currency_value2, currency_name2))
+        currency_logo_label3.bind("<Button-1>", lambda event: self.call_currency_exchange_window(
+            currency_value3, currency_name3))
 
     def calculate_result(self, event, variables, amount_entry, option_menu_to, option_menu_from, result_label):
         self.exchange_rate = variables.get(option_menu_from.get()) / variables.get(option_menu_to.get())
@@ -267,9 +346,7 @@ class CurrencyFrame:
                 text=f"{entry_value}")
 
 
-
-
-    def call_currency_exchange_window(self, currency_value):
+    def call_currency_exchange_window(self, currency_value, currency_name):
         currency_value_sell = currency_value.split(" ")[0]
         # Zaokraglij do 4 miejsc po przecinku
         currency_value_sell = round(float(currency_value_sell) - (float(currency_value_sell) * 0.01), 4)
@@ -278,40 +355,30 @@ class CurrencyFrame:
 
         # Create new window
         currency_exchange_window = tk.CTk()
-        currency_exchange_window.geometry("450x320")
+        currency_exchange_window.geometry("500x450")
 
-        left_frame = tk.CTkFrame(master=currency_exchange_window)
-        left_frame.pack(pady=5, side=tk_standard.LEFT, fill=tk_standard.BOTH, expand=True)
+        buy_frame = tk.CTkFrame(master=currency_exchange_window)
+        buy_frame.pack(pady=5, side=tk_standard.BOTTOM, fill=tk_standard.BOTH)
 
-        right_frame = tk.CTkFrame(master=currency_exchange_window)
-        right_frame.pack(pady=5, side=tk_standard.RIGHT, fill=tk_standard.BOTH, expand=True)
+        sell_frame = tk.CTkFrame(master=currency_exchange_window)
+        sell_frame.pack(pady=5, side=tk_standard.TOP, fill=tk_standard.BOTH)
 
-        sell_info_label = tk.CTkLabel(left_frame, text="Sell", font=("Noto Sans", 26, "bold"))
-        sell_info_label.pack(pady=10, padx=10)
+        sell_info_label = tk.CTkLabel(buy_frame, text="Sell", font=("Noto Sans", 22, "bold"))
+        sell_info_label.pack(pady=4, padx=10)
 
-        sell_value_label = tk.CTkLabel(left_frame, text=f'Rate: {currency_value_sell}', font=("Noto Sans", 20))
+        sell_value_label = tk.CTkLabel(buy_frame, text=f'Rate: {currency_value_sell}', font=("Noto Sans", 18))
         sell_value_label.pack(padx=10)
 
-        buy_info_label = tk.CTkLabel(right_frame, text="Buy", font=("Noto Sans", 26, "bold"))
-        buy_info_label.pack(pady=10, padx=10)
+        buy_info_label = tk.CTkLabel(sell_frame, text="Buy", font=("Noto Sans", 22, "bold"))
+        buy_info_label.pack(pady=4, padx=10)
 
-        buy_value_label = tk.CTkLabel(right_frame, text=f'Rate: {currency_value_buy}', font=("Noto Sans", 20))
+        buy_value_label = tk.CTkLabel(sell_frame, text=f'Rate: {currency_value_buy}', font=("Noto Sans", 18))
         buy_value_label.pack(padx=10)
 
-        # # Create an entry widget
-        # currency_entry = tk.CTkEntry(currency_exchange_frame)
-        # currency_entry.pack(pady=10, padx=10)
-        #
-        # value_of_currency = currency_value.split(" ")[0]
-        # print(value_of_currency)
-        #
-        # # accept button widget
-        # accept_button = tk.CTkButton(currency_exchange_frame, text="Calculate", command=lambda: print(currency_entry.get()))
-        # accept_button.pack(padx=10, pady=10)
-        #
-        # # deny button widget
-        # deny_button = tk.CTkButton(currency_exchange_frame, text="Deny", command=currency_exchange_window.destroy)
-        # deny_button.pack(padx=10, pady=10)
+        fig = self.create_historical_data(currency_name)
+        canvas = FigureCanvasTkAgg(fig, master=currency_exchange_window)
+        canvas.draw()
+        canvas.get_tk_widget().pack(side=tk_standard.BOTTOM, fill=tk_standard.BOTH, expand=1)
 
         # display the frame
         currency_exchange_window.mainloop()
