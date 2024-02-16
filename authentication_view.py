@@ -133,10 +133,6 @@ class RegisterView(BaseView):
 
         return True
     def register(self, username, first_name, last_name, password, confirm_password):
-        # TODO: check if username is existing in database
-        # TODO: check if the fields are not empty
-        # TODO: username min 3 characters, first name min 2 characters, last name min 2 characters
-        # TODO: password min 8 characters, password must contain at least 1 number, 1 uppercase letter, 1 lowercase letter
 
         if self.is_input_valid(username, first_name, last_name, password, confirm_password) is False:
             return
@@ -155,8 +151,18 @@ class RegisterView(BaseView):
             cursor.execute("""
                 INSERT INTO users (username, first_name, last_name, password)
                 VALUES (?, ?, ?, ?)""", (username, first_name, last_name, password))
-
             conn.commit()
+
+            cursor.execute("""
+                SELECT id FROM users WHERE username = ?""", (username,))
+            user_id = cursor.fetchone()[0]
+
+            # If we create new user, we need to create new account for him
+            cursor.execute("""
+                INSERT INTO accounts (user_id)
+                VALUES (?)""", (user_id,))
+            conn.commit()
+
             cursor.close()
             conn.close()
             msg = CTkMessagebox(title="Success", message="You have been registered", icon="check",

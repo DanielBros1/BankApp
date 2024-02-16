@@ -1,17 +1,23 @@
+import sqlite3
+from datetime import datetime
+
 import customtkinter as tk
 import matplotlib
 import pandas as pd
 from PIL import Image
 import tkinter as tk_standard
 import requests
+
+from CTkMessagebox import CTkMessagebox
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
 
 class CurrencyFrame:
-    def __init__(self, master):
+    def __init__(self, master, user_info):
         self.master = master
+        self.user_info = user_info
         self.my_colors = {
             # DARK MODE
             "dark_grey_color": "#2B2B2B",
@@ -26,32 +32,32 @@ class CurrencyFrame:
             {
                 "name": "USD",
                 "logo": self.load_image("cur_dolar"),
-                # "value": "4.0124 PLN"
+                "index": 1
             },
             {
                 "name": "EUR",
                 "logo": self.load_image("cur_euro"),
-                # "value": "4.3242 PLN"
+                "index": 2
             },
             {
                 "name": "GBP",
                 "logo": self.load_image("cur_pound"),
-                # "value": "5.0152 PLN"
+                "index": 3
             },
             {
                 "name": "JPY",
                 "logo": self.load_image("cur_yen"),
-                # "value": "0.02625 PLN"
+                "index": 4
             },
             {
                 "name": "CNY",
                 "logo": self.load_image("cur_yuan"),
-                # "value": "0.5446 PLN"
+                "index": 5
             },
             {
                 "name": "RUB",
                 "logo": self.load_image("cur_ruble"),
-                # "value": "0.04330 PLN"
+                "index": 6
             }
         ]
         self.fetch_exchange_rates()
@@ -86,8 +92,8 @@ class CurrencyFrame:
 
     def create_historical_data(self, base_currency, target_currency="PLN"):
         # Fetch historical data from API
-
         url = f"https://api.frankfurter.app/2020-01-01..?from={base_currency}&to={target_currency}"
+
         response = requests.get(url)
         data = response.json()
 
@@ -155,7 +161,7 @@ class CurrencyFrame:
 
         # TOP FRAME - LABELS
         top_frame = tk.CTkFrame(master=self.master, fg_color=self.my_colors["sky_blue_color"])
-        top_frame.place(relwidth=0.8, relheight=0.05, relx=0.1, rely=0.15)
+        top_frame.place(relwidth=0.8, relheight=0.05, relx=0.1, rely=0.14)
 
         amount_label = tk.CTkLabel(master=top_frame, text="AMOUNT", font=("Noto Sans", 22, "bold"), text_color="black")
         amount_label.pack(padx=10, pady=2, side=tk_standard.LEFT)
@@ -165,8 +171,8 @@ class CurrencyFrame:
         from_label.pack(padx=10, pady=2, side=tk_standard.TOP)
 
         # MIDDLE FRAME - ENTRY and OPTION MENU
-        middle_frame = tk.CTkFrame(master=self.master, fg_color=self.my_colors["sky_blue_color"])
-        middle_frame.place(relwidth=0.8, relheight=0.05, relx=0.1, rely=0.22)
+        middle_frame = tk.CTkFrame(master=self.master, fg_color=self.my_colors["grey_blue_color"])
+        middle_frame.place(relwidth=0.8, relheight=0.05, relx=0.1, rely=0.20)
         #  variables = ["USD", "EUR", "GBP", "JPY", "CNY", "RUB"]
 
         variables = {
@@ -189,8 +195,8 @@ class CurrencyFrame:
         option_menu_from.pack(pady=2, padx=10, side=tk_standard.TOP)
 
         # BOTTOM FRAME - CALCULATE BUTTON
-        bottom_frame = tk.CTkFrame(master=self.master, fg_color=self.my_colors["sky_blue_color"])
-        bottom_frame.place(relwidth=0.8, relheight=0.05, relx=0.1, rely=0.30)
+        bottom_frame = tk.CTkFrame(master=self.master, fg_color=self.my_colors["grey_blue_color"])
+        bottom_frame.place(relwidth=0.8, relheight=0.05, relx=0.1, rely=0.26)
 
         result_label = tk.CTkLabel(master=bottom_frame, text="0", font=("Noto Sans", 22, "bold"), text_color="black")
         result_label.pack(pady=2, padx=10, side=tk_standard.LEFT)
@@ -200,20 +206,28 @@ class CurrencyFrame:
                                         fg_color=self.my_colors["dark_grey_color"])
         calculate_button.pack(pady=2, padx=10, side=tk_standard.RIGHT)
 
-        # ONCLICK EVENT
-        # Pobierz wartosc
+        # MOST BOTTOM FRAME - EXCHANGE BUTTON
+        exchange_frame = tk.CTkFrame(master=self.master, fg_color=self.my_colors["light_grey_color"])
+        exchange_frame.place(relwidth=0.8, relheight=0.05, relx=0.1, rely=0.32)
 
-        # Sprawdz czy wartosc z option_menu_to jest w slowniku
-        # Jesli tak to oblicz wartosc
+        exchange_button = tk.CTkButton(master=exchange_frame, text="Exchange", font=("Noto Sans", 22, "bold"),
+                                        fg_color=self.my_colors["dark_grey_color"])
+        exchange_button.pack(pady=2, padx=10, side=tk_standard.TOP)
+
 
         self.exchange_rate = variables.get(option_menu_to.get())
 
-        # SET CURSOR ON CALCULATE BUTTON
+        # SET CURSOR ON BUTTONS
         calculate_button.configure(cursor="hand2")
+        exchange_button.configure(cursor="hand2")
 
         calculate_button.bind("<Button-1>",
                               lambda event: self.calculate_result(event, variables, amount_entry, option_menu_to,
                                                                   option_menu_from, result_label))
+        # Do funkcji przekazujemy wartosc wymiany, i dwie waluty
+        exchange_button.bind("<Button-1>", lambda event: self.exchange_function(
+            amount_entry.get(), option_menu_to.get(), option_menu_from.get()))
+
 
         # First currency
         currency_frame1 = tk.CTkFrame(master=self.master)
@@ -321,6 +335,44 @@ class CurrencyFrame:
         currency_logo_label2.bind("<Leave>",
                                   lambda event: currency_frame2.configure(fg_color=self.my_colors["dark_grey_color"]))
 
+        currency_frame3.bind("<Enter>",
+                                lambda event: currency_frame3.configure(fg_color=self.my_colors["sky_blue_color"]))
+        currency_logo_label3.bind("<Enter>",
+                                    lambda event: currency_frame3.configure(fg_color=self.my_colors["sky_blue_color"]))
+        currency_frame3.bind("<Leave>",
+                                lambda event: currency_frame3.configure(fg_color=self.my_colors["dark_grey_color"]))
+        currency_logo_label3.bind("<Leave>",
+                                    lambda event: currency_frame3.configure(fg_color=self.my_colors["dark_grey_color"]))
+
+        currency_frame4.bind("<Enter>",
+                                lambda event: currency_frame4.configure(fg_color=self.my_colors["sky_blue_color"]))
+        currency_logo_label4.bind("<Enter>",
+                                    lambda event: currency_frame4.configure(fg_color=self.my_colors["sky_blue_color"]))
+        currency_frame4.bind("<Leave>",
+                                lambda event: currency_frame4.configure(fg_color=self.my_colors["dark_grey_color"]))
+        currency_logo_label4.bind("<Leave>",
+                                    lambda event: currency_frame4.configure(fg_color=self.my_colors["dark_grey_color"]))
+
+        currency_frame5.bind("<Enter>",
+                                lambda event: currency_frame5.configure(fg_color=self.my_colors["sky_blue_color"]))
+        currency_logo_label5.bind("<Enter>",
+                                    lambda event: currency_frame5.configure(fg_color=self.my_colors["sky_blue_color"]))
+        currency_frame5.bind("<Leave>",
+                                lambda event: currency_frame5.configure(fg_color=self.my_colors["dark_grey_color"]))
+        currency_logo_label5.bind("<Leave>",
+                                    lambda event: currency_frame5.configure(fg_color=self.my_colors["dark_grey_color"]))
+
+        currency_frame6.bind("<Enter>",
+                                lambda event: currency_frame6.configure(fg_color=self.my_colors["sky_blue_color"]))
+        currency_logo_label6.bind("<Enter>",
+                                    lambda event: currency_frame6.configure(fg_color=self.my_colors["sky_blue_color"]))
+        currency_frame6.bind("<Leave>",
+                                lambda event: currency_frame6.configure(fg_color=self.my_colors["dark_grey_color"]))
+        currency_logo_label6.bind("<Leave>",
+                                    lambda event: currency_frame6.configure(fg_color=self.my_colors["dark_grey_color"]))
+
+
+
         # BINDING EVENTS
         # Stwórz nowe okno z wykresem
         currency_logo_label1.bind("<Button-1>", lambda event: self.call_currency_exchange_window(
@@ -329,6 +381,81 @@ class CurrencyFrame:
             currency_value2, currency_name2))
         currency_logo_label3.bind("<Button-1>", lambda event: self.call_currency_exchange_window(
             currency_value3, currency_name3))
+        currency_logo_label4.bind("<Button-1>", lambda event: self.call_currency_exchange_window(
+            currency_value4, currency_name4))
+        currency_logo_label5.bind("<Button-1>", lambda event: self.call_currency_exchange_window(
+            currency_value5, currency_name5))
+        currency_logo_label6.bind("<Button-1>", lambda event: self.call_currency_exchange_window(
+            currency_value6, currency_name6))
+
+
+    def exchange_function(self, amount, currency_to, currency_from):
+        conn = sqlite3.connect('currency_exchange.db')
+        c = conn.cursor()
+
+        # Check if user has enough money
+        c.execute("SELECT id FROM users WHERE username = ?", (self.user_info["username"],))
+        user = c.fetchone()
+
+        print(user)
+
+        # find user account using user id
+        c.execute("SELECT * FROM accounts WHERE user_id = ?", (user[0],))
+        account = c.fetchone()  # Konto bankowe uzytkownika
+
+        print(account)
+
+        currency_out_column = f"balance_{currency_from}"
+        currency_in_column = f"balance_{currency_to}"
+
+
+        # Check if user has enough money
+        # Fetch user currency_from balance
+        c.execute(f"SELECT {currency_out_column} FROM accounts WHERE user_id = ?", (user[0],))
+        currency_out_balance = c.fetchone()
+
+        if currency_out_balance[0] < float(amount):
+            message_box = CTkMessagebox(title="Error", message="You don't have enough money to exchange!",
+                            icon="cancel")
+
+            # Wait for user interaction and then 'return'
+            self.master.wait_window(message_box)
+            return
+
+
+        amount_after_exchange = round(float(amount) * self.exchange_rates[currency_from] / self.exchange_rates[currency_to], 4)
+        print(amount_after_exchange)
+
+        # WITHDRAW MONEY FROM CURRENCY_FROM IN ACCOUNTS TABLE
+        c.execute(f"UPDATE accounts SET {currency_out_column} = "
+                  f"{currency_out_column} - ? WHERE user_id = ?", (amount, user[0]))
+        # DEPOSIT MONEY TO CURRENCY_TO IN ACCOUNTS TABLE
+        c.execute(f"UPDATE accounts SET {currency_in_column} = "
+                    f"{currency_in_column} + ? WHERE user_id = ?", (amount_after_exchange, user[0]))
+
+        currency_from_index = self.get_currency_index(currency_from)
+        currency_to_index = self.get_currency_index(currency_to)
+
+        # use self.currencies['value'] to get index
+
+
+        print(f"Data added to transactions table - {account[0]}, {datetime.now().strftime('%Y-%m-%d')}, {amount}, {currency_from_index}")
+
+        # ADD TO TRANSACTIONS TABLE
+        c.execute("INSERT INTO transactions (id_account, date, amount, currency) VALUES (?, ?, ?, ?)",
+                    (account[0], datetime.now().strftime("%Y-%m-%d"), -float(amount), currency_from_index))
+
+        c.execute("INSERT INTO transactions (id_account, date, amount, currency) VALUES (?, ?, ?, ?)",
+                    (account[0], datetime.now().strftime("%Y-%m-%d"), amount_after_exchange, currency_to_index))
+        conn.commit()
+
+        c.close()
+        conn.close()
+
+        CTkMessagebox(title="Success", message="Exchange completed successfully!",
+                      icon="check")
+
+
 
     def calculate_result(self, event, variables, amount_entry, option_menu_to, option_menu_from, result_label):
         self.exchange_rate = variables.get(option_menu_from.get()) / variables.get(option_menu_to.get())
@@ -384,3 +511,11 @@ class CurrencyFrame:
         currency_exchange_window.mainloop()
 
         print(currency_value)
+
+
+    def get_currency_index(self, currency_name):
+        for currency in self.currencies:
+            if currency['name'] == currency_name:
+                return currency['index']
+        return None
+
