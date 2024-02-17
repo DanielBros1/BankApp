@@ -1,6 +1,5 @@
 import customtkinter as tk
 
-from authentication_view import BaseView
 from authentication_view import LoginView
 
 

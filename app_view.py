@@ -64,6 +64,8 @@ class AppView:
         # center_frame.configure(fg_color=some_dark_grey_color)
         self.center_frame.configure(fg_color=self.my_colors.get("light_grey_color"))
 
+
+        # SET ELEMENTS FROM TOP
         right_frame = tk.CTkFrame(master=app_window)
         right_frame.place(relwidth=0.25, relheight=1.0, relx=0.75, rely=0)
         # right_frame.configure(fg_color=very_dark_grey_color)
@@ -75,12 +77,21 @@ class AppView:
 
         self.center_home_build(add_money_imag, send_money_imag)
 
-        right_left = tk.CTkLabel(master=right_frame, text="RL", corner_radius=10)
-        right_left.pack(pady=12, padx=10, side=tk.LEFT)
-        right_center = tk.CTkLabel(master=right_frame, text="RC", corner_radius=10)
-        right_center.pack(pady=12, padx=10, side=tk.BOTTOM)
-        right_right = tk.CTkLabel(master=right_frame, text="RR", corner_radius=10)
-        right_right.pack(pady=12, padx=10, side=tk.RIGHT)
+        # Add to right frame Image bank_photo.png
+        bank_image = Image.open("images/bank_photo.png")
+        # Resize the image
+        image = tk.CTkImage(light_image=bank_image, dark_image=bank_image, size=(320, 585))
+        bank_label = tk.CTkLabel(master=right_frame, image=image, text="", compound=tk.TOP)
+        bank_label.pack(side=tk.TOP)
+
+        your_money_label = tk.CTkLabel(master=right_frame, text="YOUR MONEY IS", font=(MAIN_FONT, 28, "bold"),
+                                        text_color="black")
+        your_money_label.place(relx=0.5, rely=0.85, anchor=tk.CENTER)
+        safe_label = tk.CTkLabel(master=right_frame, text="SAFE", font=(MAIN_FONT, 28, "bold"), text_color="green")
+        safe_label.place(relx=0.5, rely=0.9, anchor=tk.CENTER)
+        with_us_label = tk.CTkLabel(master=right_frame, text="WITH US", font=(MAIN_FONT, 28, "bold"),
+                                    text_color="black")
+        with_us_label.place(relx=0.5, rely=0.95, anchor=tk.CENTER)
 
         # Uruchom pętlę główną nowego okna
         app_window.mainloop()

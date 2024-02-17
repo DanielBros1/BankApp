@@ -1,7 +1,7 @@
 import sqlite3
 
 import customtkinter as tk
-from PIL import Image, ImageTk
+from PIL import Image
 
 MAIN_FONT = "Noto Sans"
 
@@ -22,10 +22,6 @@ class MyAccountFrame():
         }
         self.currencies = ["USD", "EUR", "GBP", "JPY", "CNY", "RUB"]
         self.create_widgets()
-
-    def load_image(image_name):
-        white_image = Image.open(f"images/{image_name}_black.png")
-        return tk.CTkImage(light_image=white_image, dark_image=white_image, size=(150, 134))
 
     def create_widgets(self):
         # First area: 'Your account'
@@ -96,11 +92,9 @@ class MyAccountFrame():
             transaction[2] = transaction[2].split(" ")[0]
 
         # Create new window with all transactions
-
-        # Create new window
-
         transactions_window = tk.CTk()
         transactions_window.geometry("800x600")
+        transactions_window.title("All transactions")
         transactions_window.configure(fg_color=self.my_colors['dark_grey_color'])
         transactions_frame = tk.CTkScrollableFrame(master=transactions_window)
         transactions_frame.place(relwidth=1.0, relheight=1.0, relx=0, rely=0)
@@ -117,10 +111,9 @@ class MyAccountFrame():
                                                  f"{transaction[3]} {self.currencies[transaction[4] - 1]}",
                                             font=(MAIN_FONT, 24, "bold"),  # Increase font size
                                             text_color=text_color,  # Set text color based on transaction type
-                                            # bg_color=self.my_colors['sky_blue_color'],  # Set background color
-                                            padx=10,  # Add horizontal padding
-                                            pady=10)  # Add vertical padding
-            transaction_label.pack(pady=10, padx=30)  # Increase padding around the label
+                                            padx=10,
+                                            pady=10)
+            transaction_label.pack(pady=10, padx=30)
             i += 1
         transactions_window.mainloop()
 

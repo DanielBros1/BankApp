@@ -63,6 +63,7 @@ class CurrencyFrame:
                 "index": 6
             }
         ]
+        self.exchange_rates = None
         self.fetch_exchange_rates()
         self.create_widgets()
 
@@ -104,7 +105,7 @@ class CurrencyFrame:
         df["Date"] = pd.to_datetime(df["Date"])
         df["Rate"] = df["Rate"].apply(lambda x: x[target_currency])
 
-        # Create figure
+        # Create plot
         fig = Figure(figsize=(10, 6))
         ax = fig.add_subplot(111)
         ax.plot(df["Date"], df["Rate"])
@@ -272,7 +273,6 @@ class CurrencyFrame:
         currency_from_index = self.get_currency_index(currency_from)
         currency_to_index = self.get_currency_index(currency_to)
 
-
         print(
             f"Data added to transactions table - {account[0]}, {datetime.now().strftime('%Y-%m-%d')}, "
             f"{amount}, {currency_from_index}")
@@ -307,7 +307,6 @@ class CurrencyFrame:
 
     def call_currency_exchange_window(self, currency_value, currency_name):
         currency_value_sell = currency_value.split(" ")[0]
-        # Zaokraglij do 2 miejsc po przecinku
         currency_value_sell = round(float(currency_value_sell) - (float(currency_value_sell) * 0.01), 4)
         currency_value_buy = currency_value.split(" ")[0]
         currency_value_buy = round(float(currency_value_buy) + (float(currency_value_buy) * 0.01), 4)
