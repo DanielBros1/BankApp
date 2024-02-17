@@ -1,6 +1,6 @@
 import customtkinter as tk
 
-
+# File to test functionalities
 class MyApp:
     def __init__(self, master):
         self.master = master
