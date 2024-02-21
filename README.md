@@ -78,3 +78,5 @@ about the requirements and asked to try again.
 <img src="https://github.com/DanielBros1/BankApp/assets/112472952/41546172-08c9-4ea4-bcfd-87a629e64a4b" width="300">
 
 
+##### Author:
+## @Daniel Broś
