@@ -37,7 +37,7 @@ class MyAccountFrame():
         credit_card_frame = tk.CTkFrame(master=self.master)
         credit_card_frame.place(relwidth=1.0, relheight=0.35, relx=0, rely=0.15)
         credit_card_frame.configure(fg_color=self.my_colors['light_grey_color'])
-        credit_card_image = Image.open("credit_card.jpg")
+        credit_card_image = Image.open("images/credit_card.jpg")
         credit_card_photo = tk.CTkImage(light_image=credit_card_image, dark_image=credit_card_image, size=(340, 220))
         credit_card_label = tk.CTkLabel(master=credit_card_frame, image=credit_card_photo, text="")
         credit_card_label.image = credit_card_photo
